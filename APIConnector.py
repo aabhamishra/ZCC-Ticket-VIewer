@@ -3,6 +3,7 @@ from requests.auth import HTTPBasicAuth
 import CLIUserInput as inp
 
 
+# api connection class for sending http requests to zendesk and recieve response
 def get_tickets(domain, email, password):
     # Set the request parameters
     global data
@@ -42,3 +43,4 @@ def get_tickets(domain, email, password):
             data['next_page'] = data_next['next_page']
 
         return data
+
