@@ -3,12 +3,15 @@ import re
 
 import CLIOutput as out
 import APIConnector as api
+from prettytable import PrettyTable
 
 
+# function to get subdomain name from user
 def get_domain():
     return input("Please enter the subdomain for your Zendesk Account ")
 
 
+# function to get email from user and verifying if the input format of the email is correct
 def get_email():
     email = input("Please enter the email address associated with your Zendesk Account ")
     flag = False
@@ -20,10 +23,12 @@ def get_email():
             email = input("Error: Incorrect email format. Please re-enter email ")
 
 
+# function to get the password related to the zendesk account
 def get_password():
     return getpass.getpass("Please enter the password associated with your Zendesk Account ")
 
 
+# function executed during a 403 error
 def password_access_error():
     print("Error: 403 - please check that the password access is enabled under channels "
           "-> API for your zendesk account.")
@@ -31,6 +36,7 @@ def password_access_error():
     exit()
 
 
+# function executed during a 404 error
 def domain_error():
     answer = input("Error: 404 - subdomain entered is incorrect. Would you like to try authentication again?\nEnter "
                    "'Y' for yes, any other key to exit ")
@@ -38,11 +44,7 @@ def domain_error():
     auth_process(answer)
 
 
-def other_error(code):
-    print("Error:", code, '- problem with api connection.\nExiting program.')
-    exit()
-
-
+# function executed during a 401 error
 def authentication_error():
     answer = input("Error: 401 - authentication unsuccessful. Would you like to try authentication again?\nEnter 'Y' "
                    "for yes, any other key to exit ")
@@ -50,13 +52,22 @@ def authentication_error():
     auth_process(answer)
 
 
+# function executed for any other response from api which is not okay
+def other_error(code):
+    print("Error:", code, '- problem with api connection.\nExiting program.')
+    exit()
+
+
+# function executed to initiate authentication
 def auth_process(answer):
     if answer == 'Y' or answer == 'y':
         domain = get_domain()
         email = get_email()
         password = get_password()
 
-        main_menu(api.get_tickets(domain, email, password))
+        tickets = api.get_tickets(domain, email, password)
+        print("~~~~~ Welcome to the Zendesk Ticket Viewer ~~~~~")
+        main_menu(tickets)
         return
 
     else:
@@ -64,6 +75,8 @@ def auth_process(answer):
         exit()
 
 
+# sub menu when user wants to view all tickets with options to go forward or back across pages, and handling
+# circumstances where the user is on the first or last page
 def sub_menu(ticket_list, curr_page):
     option_sub = input("Press N for next page, P for previous, M to go back to main menu")
 
@@ -71,7 +84,7 @@ def sub_menu(ticket_list, curr_page):
         if option_sub == 'N' or option_sub == 'n':
             if curr_page < len(ticket_list['tickets']) // 25 + 1:
                 curr_page += 1
-                out.view_all_tickets(ticket_list, curr_page)
+                print(out.view_all_tickets(ticket_list, curr_page))
                 sub_menu(ticket_list, curr_page)
 
             else:
@@ -81,7 +94,7 @@ def sub_menu(ticket_list, curr_page):
         elif option_sub == 'P' or option_sub == 'p':
             if curr_page > 1:
                 curr_page -= 1
-                out.view_all_tickets(ticket_list, curr_page)
+                print(out.view_all_tickets(ticket_list, curr_page))
                 sub_menu(ticket_list, curr_page)
 
             else:
@@ -94,21 +107,21 @@ def sub_menu(ticket_list, curr_page):
         sub_menu(ticket_list, curr_page)
 
 
+# main menu with options to view all tickets, view specific tickets, and quit the program
 def main_menu(ticket_list):
     curr_page = 1
-
     flag = 0
     while flag == 0:
         option = input(
             "What would you like to do?\n  A. View all tickets \n  B. Search for specific ticket \n  C. Quit ")
 
         if option == 'A' or option == 'a':
-            out.view_all_tickets(ticket_list, curr_page)
+            print(out.view_all_tickets(ticket_list, curr_page))
             sub_menu(ticket_list, curr_page)
 
         elif option == 'B' or option == 'b':
             ticket_id = input("Please enter ticket ID ")
-            out.view_specific_ticket(ticket_list, ticket_id)
+            print(out.view_specific_ticket(ticket_list, ticket_id))
 
             option_sub = input("Would you like to do something else? \nEnter 'Y' for yes, any other key to exit ")
 
