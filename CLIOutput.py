@@ -1,15 +1,18 @@
 import datetime
 import calendar
+from typing import Union, Any
+
 from prettytable import PrettyTable
 
 
 # function to view all tickets
 def view_all_tickets(tickets, page):
+    if page > len(tickets['tickets']) // 25 + 1:
+        return 'Error: page number invalid'
 
-    # if there are no tickets
+    # if there are no ticket
     if len(tickets['tickets']) == 0 or tickets == {}:
-        print("No tickets exist with given account")
-        return
+        return "Error: No tickets exist with given account"
 
     # print details of 25 tickets according to page number through a PrettyTable
     else:
@@ -34,16 +37,19 @@ def view_all_tickets(tickets, page):
 
 # view ticket given the ID of the ticket. Display error if no ticket is found with that ID.
 def view_specific_ticket(tickets, ticket_id):
-
     for t in tickets['tickets']:
         if t['id'] == int(ticket_id):
             created = datetime.date(int(t['created_at'][:4]), int(t['created_at'][5:7]), int(t['created_at'][8:10]))
-            print()
-            str_return = 'Ticket ID: ' + str(t['id']) + ' | Requester ID: ' + str(t['requester_id']) + ' | Subject: ' + \
-                         t['subject'][:20].rstrip() + ('...' if len(t['subject']) > 20 else '') + ' | Priority: ' + t[
-                             'priority'] + ' | Created: ' + calendar.day_abbr[created.weekday()] + " " + \
-                         calendar.month_abbr[created.month] + " " + str(created.day) + " " + str(created.year)
+            subject = t['subject'][:20].rstrip()
+            if len(t['subject']) > 20:
+                subject = subject + '...'
 
-            return str_return
+            str_var: Union[str, Any] = 'Ticket ID:' + str(t['id']) + ' | Requester ID:' + str(
+                t['requester_id']) + ' | Subject:' + subject + ' | Priority:' + str(
+                t['priority']) + ' | Created: ' + str(calendar.day_abbr[created.weekday()]) + " " + str(
+                calendar.month_abbr[created.month]) + " " + str(created.day) + " " + str(created.year)
+
+            return str_var
 
     return "Error: Ticket with entered ID does not exist."
+
