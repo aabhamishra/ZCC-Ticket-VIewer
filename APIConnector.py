@@ -13,20 +13,27 @@ def get_tickets(domain, email, password):
 
     # Check for HTTP codes other than 200 as successful response for GET and PUT is 200
     if response.status_code == 403:
+        data = None
         inp.password_access_error()
 
     if response.status_code == 401:
+        data = None
         inp.authentication_error()
         return
-
+    if response.status_code == 404:
+        data = None
+        inp.domain_error()
+        return
     if response.status_code != 200:
-        inp.other_error()
+        data = None
+        inp.other_error(response.status_code)
 
     if response.status_code == 200:
 
         # Decode the JSON response into a dictionary and use the data
         data = response.json()
 
+        # to get all tickets
         while data['next_page'] is not None:
             url = data['next_page']
             response = requests.get(url, auth=(email, password))
